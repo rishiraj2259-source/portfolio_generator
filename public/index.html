@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Builder - Create Your Professional Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <button class="btn btn-ghost sidebar-toggle" id="sidebar-toggle" aria-label="Toggle sidebar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <h1 class="app-title">Portfolio Builder</h1>
+                <span class="app-subtitle">Create stunning portfolios</span>
+            </div>
+            <div class="header-center">
+                <div class="template-selector">
+                    <label for="template-select">Template:</label>
+                    <select id="template-select" onchange="switchTemplate(this.value)">
+                        <option value="modern">Modern Minimal</option>
+                        <option value="creative">Creative Showcase</option>
+                        <option value="professional">Professional Corporate</option>
+                        <option value="dark">Dark Developer</option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="saveDraft()">💾 Save Draft</button>
+                <button class="btn btn-primary" onclick="exportPortfolio()">📦 Export ZIP</button>
+                <button class="btn btn-preview" onclick="togglePreview()">👁 Preview</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Sidebar - Editor Controls -->
+            <aside class="sidebar" id="sidebar">
+                <nav class="sidebar-nav">
+                    <button class="nav-btn active" data-section="profile" onclick="showSection('profile')">
+                        <span class="nav-icon">👤</span> Profile
+                    </button>
+                    <button class="nav-btn" data-section="projects" onclick="showSection('projects')">
+                        <span class="nav-icon">📁</span> Projects
+                    </button>
+                    <button class="nav-btn" data-section="skills" onclick="showSection('skills')">
+                        <span class="nav-icon">⚡</span> Skills
+                    </button>
+                    <button class="nav-btn" data-section="experience" onclick="showSection('experience')">
+                        <span class="nav-icon">💼</span> Experience
+                    </button>
+                    <button class="nav-btn" data-section="education" onclick="showSection('education')">
+                        <span class="nav-icon">🎓</span> Education
+                    </button>
+                    <button class="nav-btn" data-section="customize" onclick="showSection('customize')">
+                        <span class="nav-icon">🎨</span> Customize
+                    </button>
+                </nav>
+
+                <!-- Section Content -->
+                <div class="sidebar-content">
+                    <!-- Profile Section -->
+                    <div class="section-panel active" id="section-profile">
+                        <h2 class="section-title">Profile Information</h2>
+                        
+                        <div class="form-group">
+                            <label>Profile Photo</label>
+                            <div class="photo-upload">
+                                <div class="photo-preview" id="photo-preview">
+                                    <svg class="photo-placeholder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="8" r="4"/>
+                                        <path d="M12 14c-5 0-8 3-8 6v2h16v-2c0-3-3-6-8-6z"/>
+                                    </svg>
+                                </div>
+                                <input type="file" id="photo-input" accept="image/*" onchange="handlePhotoUpload(event)" hidden>
+                                <button class="btn btn-secondary btn-sm" onclick="document.getElementById('photo-input').click()">
+                                    Upload Photo
+                                </button>
+                                <button class="btn btn-ghost btn-sm" onclick="removePhoto()">Remove</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="full-name">Full Name *</label>
+                            <input type="text" id="full-name" placeholder="John Doe" oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="title">Professional Title *</label>
+                            <input type="text" id="title" placeholder="Senior Full Stack Developer" oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bio">Bio / About Me</label>
+                            <textarea id="bio" rows="4" placeholder="Write a short bio about yourself..." oninput="updatePreview()"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" placeholder="john@example.com" oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" placeholder="+1 (555) 000-0000" oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" placeholder="San Francisco, CA" oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="website">Website / Portfolio URL</label>
+                            <input type="url" id="website" placeholder="https://johndoe.dev" oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Social Links</label>
+                            <div class="social-links">
+                                <div class="social-input">
+                                    <span class="social-icon">💼</span>
+                                    <input type="url" id="linkedin" placeholder="LinkedIn URL" oninput="updatePreview()">
+                                </div>
+                                <div class="social-input">
+                                    <span class="social-icon">🐙</span>
+                                    <input type="url" id="github" placeholder="GitHub URL" oninput="updatePreview()">
+                                </div>
+                                <div class="social-input">
+                                    <span class="social-icon">🐦</span>
+                                    <input type="url" id="twitter" placeholder="Twitter/X URL" oninput="updatePreview()">
+                                </div>
+                                <div class="social-input">
+                                    <span class="social-icon">🌐</span>
+                                    <input type="url" id="custom-social" placeholder="Custom URL" oninput="updatePreview()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Section -->
+                    <div class="section-panel" id="section-projects">
+                        <div class="section-header">
+                            <h2 class="section-title">Projects</h2>
+                            <button class="btn btn-primary btn-sm" onclick="addProject()">+ Add Project</button>
+                        </div>
+                        <div class="projects-list" id="projects-list">
+                            <!-- Projects will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="section-panel" id="section-skills">
+                        <div class="section-header">
+                            <h2 class="section-title">Skills</h2>
+                            <button class="btn btn-primary btn-sm" onclick="addSkillCategory()">+ Add Category</button>
+                        </div>
+                        <div class="skills-container" id="skills-container">
+                            <!-- Skills will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Experience Section -->
+                    <div class="section-panel" id="section-experience">
+                        <div class="section-header">
+                            <h2 class="section-title">Work Experience</h2>
+                            <button class="btn btn-primary btn-sm" onclick="addExperience()">+ Add Experience</button>
+                        </div>
+                        <div class="experience-list" id="experience-list">
+                            <!-- Experience will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Education Section -->
+                    <div class="section-panel" id="section-education">
+                        <div class="section-header">
+                            <h2 class="section-title">Education</h2>
+                            <button class="btn btn-primary btn-sm" onclick="addEducation()">+ Add Education</button>
+                        </div>
+                        <div class="education-list" id="education-list">
+                            <!-- Education will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Customize Section -->
+                    <div class="section-panel" id="section-customize">
+                        <h2 class="section-title">Customize Appearance</h2>
+                        
+                        <div class="customize-group">
+                            <h3>Color Scheme</h3>
+                            <div class="color-options">
+                                <div class="color-option" data-scheme="default" onclick="setColorScheme('default')">
+                                    <div class="color-swatch default"></div>
+                                    <span>Default</span>
+                                </div>
+                                <div class="color-option" data-scheme="blue" onclick="setColorScheme('blue')">
+                                    <div class="color-swatch blue"></div>
+                                    <span>Ocean Blue</span>
+                                </div>
+                                <div class="color-option" data-scheme="green" onclick="setColorScheme('green')">
+                                    <div class="color-swatch green"></div>
+                                    <span>Forest Green</span>
+                                </div>
+                                <div class="color-option" data-scheme="purple" onclick="setColorScheme('purple')">
+                                    <div class="color-swatch purple"></div>
+                                    <span>Royal Purple</span>
+                                </div>
+                                <div class="color-option" data-scheme="orange" onclick="setColorScheme('orange')">
+                                    <div class="color-swatch orange"></div>
+                                    <span>Sunset Orange</span>
+                                </div>
+                                <div class="color-option" data-scheme="red" onclick="setColorScheme('red')">
+                                    <div class="color-swatch red"></div>
+                                    <span>Crimson Red</span>
+                                </div>
+                                <div class="color-option custom-color" onclick="openColorPicker()">
+                                    <input type="color" id="custom-color-picker" onchange="setCustomColor(this.value)">
+                                    <span>Custom</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="customize-group">
+                            <h3>Font Family</h3>
+                            <div class="font-options">
+                                <select id="font-heading" onchange="setFont('heading', this.value)">
+                                    <option value="Inter">Inter (Default)</option>
+                                    <option value="Playfair Display">Playfair Display (Serif)</option>
+                                    <option value="JetBrains Mono">JetBrains Mono (Mono)</option>
+                                    <option value="system-ui">System UI</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                </select>
+                                <select id="font-body" onchange="setFont('body', this.value)">
+                                    <option value="Inter">Inter (Default)</option>
+                                    <option value="Playfair Display">Playfair Display (Serif)</option>
+                                    <option value="JetBrains Mono">JetBrains Mono (Mono)</option>
+                                    <option value="system-ui">System UI</option>
+                                    <option value="Georgia">Georgia</option>
+                                    <option value="Helvetica">Helvetica</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="customize-group">
+                            <h3>Template Styles</h3>
+                            <div class="template-style-options">
+                                <label class="style-toggle">
+                                    <input type="checkbox" id="dark-mode" onchange="toggleDarkMode(this.checked)">
+                                    <span class="toggle-slider"></span>
+                                    Dark Mode
+                                </label>
+                                <label class="style-toggle">
+                                    <input type="checkbox" id="compact-mode" onchange="toggleCompactMode(this.checked)">
+                                    <span class="toggle-slider"></span>
+                                    Compact Layout
+                                </label>
+                                <label class="style-toggle">
+                                    <input type="checkbox" id="show-borders" onchange="toggleBorders(this.checked)" checked>
+                                    <span class="toggle-slider"></span>
+                                    Show Borders
+                                </label>
+                                <label class="style-toggle">
+                                    <input type="checkbox" id="animate-elements" onchange="toggleAnimations(this.checked)" checked>
+                                    <span class="toggle-slider"></span>
+                                    Enable Animations
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="customize-group">
+                            <h3>Spacing & Layout</h3>
+                            <div class="slider-group">
+                                <label>Section Spacing: <span id="spacing-value">1.5rem</span></label>
+                                <input type="range" id="section-spacing" min="0.5" max="3" step="0.25" value="1.5" oninput="updateSpacing(this.value)">
+                            </div>
+                            <div class="slider-group">
+                                <label>Border Radius: <span id="radius-value">8px</span></label>
+                                <input type="range" id="border-radius" min="0" max="24" step="2" value="8" oninput="updateRadius(this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Preview Area -->
+            <div class="preview-container" id="preview-container">
+                <div class="preview-header">
+                    <h2 class="preview-title">Live Preview</h2>
+                    <div class="preview-device-selector">
+                        <button class="device-btn active" data-device="desktop" onclick="setPreviewDevice('desktop')">🖥</button>
+                        <button class="device-btn" data-device="tablet" onclick="setPreviewDevice('tablet')">📱</button>
+                        <button class="device-btn" data-device="mobile" onclick="setPreviewDevice('mobile')">📱</button>
+                    </div>
+                </div>
+                <div class="preview-frame-wrapper" id="preview-frame-wrapper">
+                    <iframe class="preview-frame" id="preview-frame" srcdoc=""></iframe>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <span class="status-indicator" id="save-status">●</span>
+                <span id="status-text">Draft saved</span>
+            </div>
+            <div class="status-center">
+                <span id="last-saved">Last saved: Just now</span>
+            </div>
+            <div class="status-right">
+                <span id="word-count">0 words</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="project-modal" onclick="closeModal(event, 'project-modal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Add Project</h3>
+                <button class="modal-close" onclick="closeModal(null, 'project-modal')">×</button>
+            </div>
+            <form class="modal-form" id="project-form" onsubmit="saveProject(event)">
+                <input type="hidden" id="project-id">
+                <div class="form-group">
+                    <label for="project-name">Project Name *</label>
+                    <input type="text" id="project-name" required placeholder="My Awesome Project">
+                </div>
+                <div class="form-group">
+                    <label for="project-description">Description</label>
+                    <textarea id="project-description" rows="3" placeholder="Describe your project..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="project-tech">Technologies (comma separated)</label>
+                        <input type="text" id="project-tech" placeholder="React, Node.js, MongoDB">
+                    </div>
+                    <div class="form-group">
+                        <label for="project-url">Live URL</label>
+                        <input type="url" id="project-url" placeholder="https://project.demo">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="project-github">GitHub URL</label>
+                        <input type="url" id="project-github" placeholder="https://github.com/user/repo">
+                    </div>
+                    <div class="form-group">
+                        <label for="project-image">Project Image URL</label>
+                        <input type="url" id="project-image" placeholder="https://example.com/image.png">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="project-featured">Featured Project</label>
+                    <select id="project-featured">
+                        <option value="false">No</option>
+                        <option value="true">Yes</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(null, 'project-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="skill-modal" onclick="closeModal(event, 'skill-modal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="skill-modal-title">Add Skill Category</h3>
+                <button class="modal-close" onclick="closeModal(null, 'skill-modal')">×</button>
+            </div>
+            <form class="modal-form" id="skill-form" onsubmit="saveSkillCategory(event)">
+                <input type="hidden" id="skill-category-id">
+                <div class="form-group">
+                    <label for="skill-category-name">Category Name *</label>
+                    <input type="text" id="skill-category-name" required placeholder="Frontend Development">
+                </div>
+                <div class="form-group">
+                    <label>Skills (comma separated)</label>
+                    <textarea id="skill-items" rows="3" placeholder="React, Vue, TypeScript, CSS, HTML"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(null, 'skill-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="experience-modal" onclick="closeModal(event, 'experience-modal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="experience-modal-title">Add Experience</h3>
+                <button class="modal-close" onclick="closeModal(null, 'experience-modal')">×</button>
+            </div>
+            <form class="modal-form" id="experience-form" onsubmit="saveExperience(event)">
+                <input type="hidden" id="experience-id">
+                <div class="form-group">
+                    <label for="exp-company">Company *</label>
+                    <input type="text" id="exp-company" required placeholder="Tech Corp Inc.">
+                </div>
+                <div class="form-group">
+                    <label for="exp-role">Role *</label>
+                    <input type="text" id="exp-role" required placeholder="Senior Developer">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="exp-start">Start Date</label>
+                        <input type="month" id="exp-start">
+                    </div>
+                    <div class="form-group">
+                        <label for="exp-end">End Date</label>
+                        <input type="month" id="exp-end">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="exp-current">Currently Working Here</label>
+                    <input type="checkbox" id="exp-current" onchange="toggleCurrentJob(this.checked)">
+                </div>
+                <div class="form-group">
+                    <label for="exp-description">Description</label>
+                    <textarea id="exp-description" rows="4" placeholder="Describe your responsibilities and achievements..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="exp-technologies">Technologies Used</label>
+                    <input type="text" id="exp-technologies" placeholder="React, Node.js, AWS, Docker">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(null, 'experience-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Experience</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="education-modal" onclick="closeModal(event, 'education-modal')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="education-modal-title">Add Education</h3>
+                <button class="modal-close" onclick="closeModal(null, 'education-modal')">×</button>
+            </div>
+            <form class="modal-form" id="education-form" onsubmit="saveEducation(event)">
+                <input type="hidden" id="education-id">
+                <div class="form-group">
+                    <label for="edu-institution">Institution *</label>
+                    <input type="text" id="edu-institution" required placeholder="University of Technology">
+                </div>
+                <div class="form-group">
+                    <label for="edu-degree">Degree *</label>
+                    <input type="text" id="edu-degree" required placeholder="Bachelor of Science in Computer Science">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edu-start">Start Year</label>
+                        <input type="number" id="edu-start" min="1950" max="2030" placeholder="2018">
+                    </div>
+                    <div class="form-group">
+                        <label for="edu-end">End Year</label>
+                        <input type="number" id="edu-end" min="1950" max="2030" placeholder="2022">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edu-description">Description (optional)</label>
+                    <textarea id="edu-description" rows="2" placeholder="Honors, relevant coursework, etc."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal(null, 'education-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Education</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
