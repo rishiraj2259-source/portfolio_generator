@@ -1331,6 +1331,19 @@ function saveDraft() {
     }
 }
 
+// Older versions pre-filled sample entries; remove them from drafts saved by those versions.
+function stripOldSampleData() {
+    const sampleSkills = {
+        'Frontend Development': 'React,Vue.js,TypeScript,Tailwind CSS,Next.js',
+        'Backend Development': 'Node.js,Python,PostgreSQL,MongoDB,REST APIs',
+        'DevOps & Tools': 'Docker,AWS,GitHub Actions,Vercel,Linux'
+    };
+    state.projects = state.projects.filter(p => !/\.example\.com/.test(p.url || ''));
+    state.skills = state.skills.filter(s => sampleSkills[s.name] !== (s.items || []).join(','));
+    state.experience = state.experience.filter(e => !['Tech Solutions Inc.', 'Digital Agency Co.'].includes(e.company));
+    state.education = state.education.filter(e => e.institution !== 'University of Technology');
+}
+
 function loadDraft() {
     try {
         const draft = localStorage.getItem('portfolio-draft');
@@ -1343,6 +1356,7 @@ function loadDraft() {
             state.skills = data.skills || [];
             state.experience = data.experience || [];
             state.education = data.education || [];
+            stripOldSampleData();
             state.customize = { ...state.customize, ...data.customize };
             
             // Update form inputs
@@ -1767,93 +1781,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// ========================================
-// Initialize default data for demo
-// ========================================
-function initializeDemoData() {
-    if (state.projects.length === 0 && state.skills.length === 0 && state.experience.length === 0 && state.education.length === 0) {
-        // Add sample data for demonstration
-        state.projects = [
-            {
-                id: generateId(),
-                name: 'E-Commerce Platform',
-                description: 'Full-stack e-commerce solution with payment integration, inventory management, and admin dashboard.',
-                technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe', 'Tailwind CSS'],
-                url: 'https://demo-shop.example.com',
-                github: 'https://github.com/user/ecommerce',
-                image: '',
-                featured: true
-            },
-            {
-                id: generateId(),
-                name: 'Task Management App',
-                description: 'Collaborative task manager with real-time updates, team workspaces, and progress tracking.',
-                technologies: ['Vue.js', 'Firebase', 'TypeScript', 'Pinia'],
-                url: 'https://tasks.example.com',
-                github: 'https://github.com/user/taskapp',
-                image: '',
-                featured: false
-            }
-        ];
-        
-        state.skills = [
-            {
-                id: generateId(),
-                name: 'Frontend Development',
-                items: ['React', 'Vue.js', 'TypeScript', 'Tailwind CSS', 'Next.js']
-            },
-            {
-                id: generateId(),
-                name: 'Backend Development',
-                items: ['Node.js', 'Python', 'PostgreSQL', 'MongoDB', 'REST APIs']
-            },
-            {
-                id: generateId(),
-                name: 'DevOps & Tools',
-                items: ['Docker', 'AWS', 'GitHub Actions', 'Vercel', 'Linux']
-            }
-        ];
-        
-        state.experience = [
-            {
-                id: generateId(),
-                company: 'Tech Solutions Inc.',
-                role: 'Senior Full Stack Developer',
-                startDate: '2022-01',
-                endDate: '',
-                current: true,
-                description: 'Lead development of client projects using modern web technologies. Mentor junior developers and define technical architecture.',
-                technologies: ['React', 'Node.js', 'AWS', 'TypeScript']
-            },
-            {
-                id: generateId(),
-                company: 'Digital Agency Co.',
-                role: 'Frontend Developer',
-                startDate: '2020-03',
-                endDate: '2021-12',
-                current: false,
-                description: 'Built responsive web applications for various clients. Implemented pixel-perfect designs and optimized performance.',
-                technologies: ['Vue.js', 'Nuxt.js', 'SCSS', 'GraphQL']
-            }
-        ];
-        
-        state.education = [
-            {
-                id: generateId(),
-                institution: 'University of Technology',
-                degree: 'Bachelor of Science in Computer Science',
-                startYear: 2016,
-                endYear: 2020,
-                description: 'Graduated Magna Cum Laude. Specialized in Software Engineering and Human-Computer Interaction.'
-            }
-        ];
-        
-        renderAll();
-    }
-}
-
-// Initialize demo data after load
-setTimeout(initializeDemoData, 100);
 
 // Expose functions globally for inline handlers
 window.showSection = showSection;
