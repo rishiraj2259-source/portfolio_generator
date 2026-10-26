@@ -75,3 +75,13 @@ select option{background:#0a0a0c;color:var(--text-primary)}
 .modal{background:#0c0c0f;border:1px solid var(--border-strong);border-radius:20px;box-shadow:var(--shadow-lg)}
 .toast{background:#101014;border:1px solid var(--border-strong);border-radius:12px;color:var(--text-primary)}
 .photo-placeholder,.photo-preview{border-color:rgba(139,92,246,.5)}
+
+/* Live preview: page rendered at a real width, scaled to fit the pane */
+.preview-container{min-width:0}
+.preview-frame-wrapper{overflow:hidden;padding:20px;background:transparent}
+.preview-stage{position:relative;flex:none;overflow:hidden;background:#fff;border-radius:14px;
+  box-shadow:0 24px 60px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.1)}
+.preview-stage .preview-frame{position:absolute;top:0;left:0;transform-origin:0 0;max-width:none!important;
+  border-radius:0!important;box-shadow:none;transition:none}
+.preview-frame-wrapper[data-device="tablet"] .preview-stage{border-radius:22px}
+.preview-frame-wrapper[data-device="mobile"] .preview-stage{border-radius:30px}

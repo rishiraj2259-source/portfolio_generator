@@ -1890,3 +1890,37 @@ window.switchTemplate = switchTemplate;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.closeAllModals = closeAllModals;
+// ===== Live preview: render at a real device width, then scale to fit the pane =====
+(function initPreviewFit() {
+    function setup() {
+        const wrap = document.getElementById('preview-frame-wrapper');
+        const frame = document.getElementById('preview-frame');
+        if (!wrap || !frame) return;
+        const stage = document.createElement('div');
+        stage.className = 'preview-stage';
+        frame.parentNode.insertBefore(stage, frame);
+        stage.appendChild(frame);
+        const SIZES = { desktop: [1100, null], tablet: [768, 1024], mobile: [375, 780] };
+        function fit() {
+            const cs = getComputedStyle(wrap);
+            const aw = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+            const ah = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            if (!(aw > 50 && ah > 50)) return;               // preview hidden (e.g. on phones)
+            const dev = wrap.dataset.device || 'desktop';
+            let [w, h] = SIZES[dev] || SIZES.desktop;
+            if (dev === 'desktop' && aw < 700) w = 800;      // narrow pane: use a smaller virtual page width
+            let s = Math.min(1, aw / w);
+            if (h) s = Math.min(s, ah / h); else h = ah / s; // desktop fills the pane height, others fit whole device
+            frame.style.width = w + 'px';
+            frame.style.height = h + 'px';
+            frame.style.transform = 'scale(' + s + ')';
+            stage.style.width = (w * s) + 'px';
+            stage.style.height = (h * s) + 'px';
+        }
+        new ResizeObserver(fit).observe(wrap);
+        new MutationObserver(fit).observe(wrap, { attributes: true, attributeFilter: ['data-device'] });
+        fit();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+    else setup();
+})();
