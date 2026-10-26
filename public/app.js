@@ -150,9 +150,9 @@ function setupEventListeners() {
     
     elements.darkMode.addEventListener('change', () => {
         state.customize.darkMode = elements.darkMode.checked;
+        setWebsiteTheme(elements.darkMode.checked ? 'dark' : 'light', false);
         markDirty();
         updatePreview();
-        applyDarkMode();
     });
     
     elements.compactMode.addEventListener('change', () => {
@@ -814,15 +814,54 @@ function setFont(type, font) {
     updatePreview();
 }
 
+function setWebsiteTheme(theme, syncCustomize = true) {
+    const isDark = theme === 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    try {
+        localStorage.setItem('website-theme', theme);
+    } catch (e) {}
+
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (toggleBtn) {
+        const icon = document.getElementById('theme-toggle-icon');
+        const text = document.getElementById('theme-toggle-text');
+        if (icon) icon.textContent = isDark ? '🌙' : '☀️';
+        if (text) text.textContent = isDark ? 'Dark' : 'Light';
+        toggleBtn.setAttribute('title', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+        toggleBtn.setAttribute('aria-label', isDark ? 'Switch to light theme' : 'Switch to dark theme');
+    }
+
+    if (syncCustomize) {
+        state.customize.darkMode = isDark;
+        if (elements.darkMode) {
+            elements.darkMode.checked = isDark;
+        }
+        markDirty();
+        updatePreview();
+    }
+}
+
+function toggleWebsiteTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setWebsiteTheme(nextTheme, true);
+    showToast(`Switched to ${nextTheme} theme`, 'info');
+}
+
 function toggleDarkMode(enabled) {
     state.customize.darkMode = enabled;
-    document.documentElement.setAttribute('data-theme', enabled ? 'dark' : 'light');
+    setWebsiteTheme(enabled ? 'dark' : 'light', false);
     markDirty();
     updatePreview();
 }
 
 function applyDarkMode() {
-    document.documentElement.setAttribute('data-theme', state.customize.darkMode ? 'dark' : 'light');
+    let savedTheme = null;
+    try {
+        savedTheme = localStorage.getItem('website-theme');
+    } catch (e) {}
+    const theme = savedTheme || (state.customize.darkMode ? 'dark' : 'dark');
+    setWebsiteTheme(theme, false);
 }
 
 function toggleCompactMode(enabled) {
@@ -886,6 +925,7 @@ function generatePortfolioHTML() {
     <style>
         ${getBaseStyles(primaryColor, customize, isDark)}
         ${templateStyles}
+        ${getEnhanceCSS(primaryColor, isDark)}
     </style>
 </head>
 <body class="${isDark ? 'dark' : ''} ${customize.compactMode ? 'compact' : ''} ${customize.animateElements ? 'animate' : ''}">
@@ -908,17 +948,89 @@ function generatePortfolioHTML() {
                 document.querySelector(this.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
             });
         });
+        ${ENHANCE_JS}
     </script>
 </body>
 </html>`;
 }
 
+// ===== Interactive layer added to every exported portfolio =====
+const ENHANCE_JS = String.raw`(function(){
+var d=document,RM=matchMedia('(prefers-reduced-motion: reduce)').matches,FINE=matchMedia('(hover: hover) and (pointer: fine)').matches;
+var AC=(getComputedStyle(d.documentElement).getPropertyValue('--accent')||'#8b5cf6').trim();
+function mk(t,id){var e=d.createElement(t);e.id=id;d.body.appendChild(e);return e}
+var pg=mk('div','pg'),dock=mk('nav','dock');
+d.querySelectorAll('.section[id]').forEach(function(s){var t=s.querySelector('.section-title'),a=d.createElement('a');a.href='#'+s.id;a.textContent=t?t.textContent:s.id;dock.appendChild(a)});
+var up=d.createElement('a');up.textContent='\u2191';up.setAttribute('role','button');up.onclick=function(){scrollTo({top:0,behavior:'smooth'})};dock.appendChild(up);
+function onScroll(){var h=d.documentElement.scrollHeight-innerHeight;pg.style.width=(h>0?scrollY/h*100:0)+'%';dock.classList.toggle('show',scrollY>240)}
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+var io2=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)[].forEach.call(dock.children,function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)})})},{rootMargin:'-45% 0px -50% 0px'});
+d.querySelectorAll('.section[id]').forEach(function(s){io2.observe(s)});
+if(!RM){
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+ d.querySelectorAll('.portfolio-header .profile-photo,.portfolio-header h1,.portfolio-header .title,.portfolio-header .bio,.section-title,.card,.experience-item,.education-item').forEach(function(n,i){n.classList.add('rv');n.style.animationDelay=(i%4)*90+'ms';io.observe(n)});
+ var ti=d.querySelector('.portfolio-header .title');
+ if(ti&&!ti.children.length){var full=ti.textContent.trim(),k=0;ti.textContent='';ti.classList.add('tw');(function t(){ti.textContent=full.slice(0,++k);if(k<full.length)setTimeout(t,55)})()}
+ var cv=mk('canvas','bg'),cx=cv.getContext('2d'),W,H,P=[],m={x:-999,y:-999};
+ function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight;var n=Math.min(80,Math.floor(W*H/18000));P=[];for(var i=0;i<n;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4})}
+ rs();addEventListener('resize',rs);addEventListener('mousemove',function(e){m.x=e.clientX;m.y=e.clientY});
+ (function f(){cx.clearRect(0,0,W,H);cx.fillStyle=AC;cx.strokeStyle=AC;
+  for(var i=0;i<P.length;i++){var p=P[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+   var dx=p.x-m.x,dy=p.y-m.y,dm=Math.sqrt(dx*dx+dy*dy)||1;if(dm<140){p.x+=dx/dm*1.2;p.y+=dy/dm*1.2}
+   cx.globalAlpha=.6;cx.beginPath();cx.arc(p.x,p.y,1.6,0,6.283);cx.fill();
+   for(var j=i+1;j<P.length;j++){var q=P[j],a=p.x-q.x,b=p.y-q.y,dd=a*a+b*b;if(dd<14400){cx.globalAlpha=(1-dd/14400)*.25;cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(q.x,q.y);cx.stroke()}}}
+  requestAnimationFrame(f)})();
+ if(FINE){
+  var sp=mk('div','spot');addEventListener('mousemove',function(e){sp.style.setProperty('--mx',e.clientX+'px');sp.style.setProperty('--my',e.clientY+'px')});
+  d.querySelectorAll('.card').forEach(function(c){c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;c.style.setProperty('--cx',x+'px');c.style.setProperty('--cy',y+'px');c.style.transform='perspective(800px) rotateX('+((y/r.height-.5)*-8)+'deg) rotateY('+((x/r.width-.5)*8)+'deg) translateY(-4px)'});c.addEventListener('mouseleave',function(){c.style.transform=''})});
+  d.querySelectorAll('.btn').forEach(function(b){b.addEventListener('mousemove',function(e){var r=b.getBoundingClientRect();b.style.transform='translate('+((e.clientX-r.left-r.width/2)*.25)+'px,'+((e.clientY-r.top-r.height/2)*.35)+'px)'});b.addEventListener('mouseleave',function(){b.style.transform=''})});
+ }
+}
+})();
+`;
+
+function getEnhanceCSS(primaryColor, isDark) {
+    const hi = isDark ? '#ffffff' : '#0f172a';
+    return String.raw`:root{--accent:${primaryColor}}
+body{overflow-x:hidden}
+body::before{content:'';position:fixed;inset:-20%;z-index:0;pointer-events:none;
+ background:radial-gradient(40% 35% at 18% 12%,color-mix(in srgb,var(--accent) ${isDark ? 26 : 14}%,transparent),transparent),
+ radial-gradient(35% 30% at 85% 75%,color-mix(in srgb,#ec4899 ${isDark ? 16 : 8}%,transparent),transparent);animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate3d(4%,3%,0) scale(1.08)}}
+.portfolio-container,footer{position:relative;z-index:2}
+#bg{position:fixed;inset:0;z-index:1;pointer-events:none}
+#spot{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(500px circle at var(--mx,50%) var(--my,50%),color-mix(in srgb,var(--accent) 13%,transparent),transparent 60%)}
+#pg{position:fixed;top:0;left:0;height:3px;width:0;z-index:100;background:linear-gradient(90deg,#ec4899,var(--accent),#3b82f6);box-shadow:0 0 12px var(--accent)}
+.portfolio-header h1{background:linear-gradient(90deg,${hi},var(--accent),${hi});background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
+@keyframes shine{to{background-position:200% center}}
+.profile-photo{box-shadow:0 0 0 3px var(--accent),0 0 40px color-mix(in srgb,var(--accent) 55%,transparent);animation:glow 3.5s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 3px var(--accent),0 0 70px color-mix(in srgb,var(--accent) 75%,transparent)}}
+.section-title::after{width:60px;animation:bar 2.4s ease-in-out infinite alternate}
+@keyframes bar{to{width:120px}}
+.rv{opacity:0}.rv.in{opacity:1;animation:rise .8s cubic-bezier(.2,.7,.2,1) backwards}
+@keyframes rise{from{opacity:0;transform:translateY(36px) scale(.97)}}
+.tw::after{content:'|';margin-left:2px;color:var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.card{position:relative;transition:transform .15s ease-out,border-color .3s,box-shadow .3s}
+.card::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--cx,50%) var(--cy,50%),color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%)}
+.card:hover{border-color:var(--accent)}.card:hover::after{opacity:1}
+.tag{transition:transform .2s}.tag:hover{transform:translateY(-2px) scale(1.07)}
+.btn{transition:transform .15s ease-out,background .2s,box-shadow .2s}.btn:hover{box-shadow:0 8px 28px color-mix(in srgb,var(--accent) 45%,transparent)}
+#dock{position:fixed;left:50%;bottom:18px;transform:translate(-50%,120px);display:flex;gap:4px;padding:6px;border-radius:999px;max-width:94vw;overflow-x:auto;z-index:90;
+ background:rgba(0,0,0,.72);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+#dock.show{transform:translate(-50%,0)}
+#dock a{color:#d4d4d8;font-size:.8rem;padding:8px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s}
+#dock a:hover{background:rgba(255,255,255,.1)}#dock a.on{background:var(--accent);color:#fff}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+`;
+}
+
 function getBaseStyles(primaryColor, customize, isDark) {
-    const bgPrimary = isDark ? '#0f172a' : '#ffffff';
-    const bgSecondary = isDark ? '#1e293b' : '#f8fafc';
-    const textPrimary = isDark ? '#f1f5f9' : '#1e293b';
-    const textSecondary = isDark ? '#94a3b8' : '#64748b';
-    const borderColor = isDark ? '#334155' : '#e2e8f0';
+    const bgPrimary = isDark ? '#000000' : '#ffffff';
+    const bgSecondary = isDark ? '#0b0b0d' : '#f8fafc';
+    const textPrimary = isDark ? '#fafafa' : '#1e293b';
+    const textSecondary = isDark ? '#a1a1aa' : '#64748b';
+    const borderColor = isDark ? '#222226' : '#e2e8f0';
     const shadowColor = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
     
     return `
@@ -998,7 +1110,7 @@ function getTemplateStyles(template) {
             .experience-item::before, .education-item::before { content: ''; position: absolute; left: -9px; top: 0; width: 12px; height: 12px; background: var(--primary); border-radius: 50%; border: 3px solid var(--bg-primary); }
         `,
         dark: `
-            :root { --bg-primary: #0a0a0a; --bg-secondary: #141414; --bg-tertiary: #1e1e1e; --text-primary: #fafafa; --text-secondary: #a3a3a3; --border: #2a2a2a; }
+            :root { --bg-primary: #000000; --bg-secondary: #141414; --bg-tertiary: #1e1e1e; --text-primary: #fafafa; --text-secondary: #a3a3a3; --border: #2a2a2a; }
             body { background: var(--bg-primary); color: var(--text-primary); }
             .portfolio-header { padding: 3rem 0; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
             .header-content { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 2rem; }
@@ -1479,11 +1591,11 @@ function generateStandaloneCSS() {
     const primaryColor = customize.customColor;
     const isDark = customize.darkMode;
     
-    const bgPrimary = isDark ? '#0f172a' : '#ffffff';
-    const bgSecondary = isDark ? '#1e293b' : '#f8fafc';
-    const textPrimary = isDark ? '#f1f5f9' : '#1e293b';
-    const textSecondary = isDark ? '#94a3b8' : '#64748b';
-    const borderColor = isDark ? '#334155' : '#e2e8f0';
+    const bgPrimary = isDark ? '#000000' : '#ffffff';
+    const bgSecondary = isDark ? '#0b0b0d' : '#f8fafc';
+    const textPrimary = isDark ? '#fafafa' : '#1e293b';
+    const textSecondary = isDark ? '#a1a1aa' : '#64748b';
+    const borderColor = isDark ? '#222226' : '#e2e8f0';
     const shadowColor = isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.1)';
     
     return `
@@ -1499,7 +1611,7 @@ function generateStandaloneCSS() {
     --primary-light: ${primaryColor}20;
     --bg-primary: ${bgPrimary};
     --bg-secondary: ${bgSecondary};
-    --bg-tertiary: ${isDark ? '#334155' : '#f1f5f9'};
+    --bg-tertiary: ${isDark ? '#222226' : '#f1f5f9'};
     --text-primary: ${textPrimary};
     --text-secondary: ${textSecondary};
     --border: ${borderColor};
@@ -1817,3 +1929,41 @@ window.switchTemplate = switchTemplate;
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.closeAllModals = closeAllModals;
+window.toggleWebsiteTheme = toggleWebsiteTheme;
+window.setWebsiteTheme = setWebsiteTheme;
+// ===== Live preview: render at a real device width, then scale to fit the pane =====
+(function initPreviewFit() {
+    function setup() {
+        const wrap = document.getElementById('preview-frame-wrapper');
+        const frame = document.getElementById('preview-frame');
+        if (!wrap || !frame) return;
+        const stage = document.createElement('div');
+        stage.className = 'preview-stage';
+        frame.parentNode.insertBefore(stage, frame);
+        stage.appendChild(frame);
+        const SIZES = { desktop: [1100, null], tablet: [768, 1024], mobile: [375, 780] };
+        function fit() {
+            const cs = getComputedStyle(wrap);
+            const aw = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+            const ah = wrap.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+            if (!(aw > 50 && ah > 50)) return;               // preview hidden (e.g. on phones)
+            const dev = wrap.dataset.device || 'desktop';
+            let [w, h] = SIZES[dev] || SIZES.desktop;
+            if (dev === 'desktop' && aw < 700) w = 800;      // narrow pane: use a smaller virtual page width
+            let s = Math.min(1, aw / w);
+            if (h) s = Math.min(s, ah / h); else h = ah / s; // desktop fills the pane height, others fit whole device
+            frame.style.width = w + 'px';
+            frame.style.height = h + 'px';
+            frame.style.transform = 'scale(' + s + ')';
+            stage.style.width = (w * s) + 'px';
+            stage.style.height = (h * s) + 'px';
+            const pt = document.querySelector('.preview-title');
+            if (pt) pt.dataset.zoom = Math.round(s * 100) + '%';   // shows the current zoom level
+        }
+        new ResizeObserver(fit).observe(wrap);
+        new MutationObserver(fit).observe(wrap, { attributes: true, attributeFilter: ['data-device'] });
+        fit();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setup);
+    else setup();
+})();

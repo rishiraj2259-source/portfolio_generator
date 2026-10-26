@@ -6,11 +6,20 @@
     <title>Portfolio Builder - Create Your Professional Portfolio</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
     <link rel="stylesheet" href="theme.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            try {
+                var theme = localStorage.getItem('website-theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch(e) {}
+        })();
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -42,6 +51,9 @@
                 </div>
             </div>
             <div class="header-right">
+                <button class="btn btn-secondary theme-toggle-btn" id="theme-toggle" onclick="toggleWebsiteTheme()" aria-label="Toggle theme" title="Switch light/dark theme">
+                    <span id="theme-toggle-icon">🌙</span> <span id="theme-toggle-text">Dark</span>
+                </button>
                 <button class="btn btn-secondary" onclick="saveDraft()">💾 Save Draft</button>
                 <button class="btn btn-primary" onclick="exportPortfolio()">📦 Export ZIP</button>
                 <button class="btn btn-preview" onclick="togglePreview()">👁 Preview</button>
